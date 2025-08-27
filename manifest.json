@@ -1,0 +1,22 @@
+{
+  "name": "黑白灰倒计时应用",
+  "short_name": "倒计时",
+  "description": "一个简洁的黑白灰风格倒计时应用，支持PWA离线使用。",
+  "start_url": "/countdown-pwa/html-artifact.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#333333",
+  "icons": [
+    {
+      "src": "/countdown-pwa/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/countdown-pwa/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "orientation": "portrait-primary"
+}

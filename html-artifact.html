@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>黑白灰倒计时应用</title>
+
+    <!-- PWA 相关配置 -->
+    <link rel="manifest" href="/countdown-pwa/manifest.json">
+    <meta name="theme-color" content="#333333"> <!-- 与manifest.json中的theme_color保持一致 -->
+    <link rel="apple-touch-icon" href="/countdown-pwa/icons/icon-192x192.png"> <!-- iOS Safari PWA图标 -->
+
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --border-color: #cccccc;
+            --button-bg: #f0f0f0;
+            --button-hover: #e0e0e0;
+            --accent-color: #333333;
+        }
+
+        .dark-mode {
+            --bg-color: #1a1a1a;
+            --text-color: #ffffff;
+            --border-color: #444444;
+            --button-bg: #333333;
+            --button-hover: #444444;
+            --accent-color: #cccccc;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color 0.3s, color 0.3s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+            font-weight: 300;
+            letter-spacing: 1px;
+            font-size: 1.8rem;
+        }
+
+        .timer-display {
+            font-size: 5rem;
+            font-weight: 300;
+            margin: 30px 0;
+            letter-spacing: 3px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 14px 25px;
+            font-size: 1.1rem;
+            background-color: var(--button-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 100px;
+            font-weight: 500;
+            -webkit-touch-callout: none;
+        }
+
+        button:hover {
+            background-color: var(--button-hover);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .config {
+            background-color: var(--button-bg);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .config label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .config input {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.1rem;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: var(--text-color);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+
+        .theme-toggle:active {
+            background-color: rgba(128, 128, 128, 0.2);
+        }
+
+        .status {
+            margin-top: 15px;
+            font-style: italic;
+            opacity: 0.7;
+            font-size: 1.1rem;
+        }
+
+        /* 移动端优化 */
+        @media (max-width: 600px) {
+            body {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+                margin-bottom: 20px;
+            }
+            
+            .timer-display {
+                font-size: 4rem;
+                margin: 20px 0;
+            }
+            
+            .controls {
+                gap: 12px;
+                margin: 25px 0;
+            }
+            
+            button {
+                padding: 16px 20px;
+                font-size: 1.2rem;
+                min-width: 120px;
+                flex: 1;
+                max-width: 160px;
+            }
+            
+            .config {
+                padding: 15px;
+                margin-top: 15px;
+            }
+            
+            .config input {
+                padding: 15px;
+                font-size: 1.2rem;
+            }
+            
+            .theme-toggle {
+                top: 15px;
+                right: 15px;
+                width: 45px;
+                height: 45px;
+                font-size: 1.6rem;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .timer-display {
+                font-size: 3.2rem;
+            }
+            
+            button {
+                min-width: 100px;
+                padding: 14px 15px;
+                font-size: 1.1rem;
+            }
+        }
+
+        /* 锁屏和后台运行优化 */
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>倒计时应用</h1>
+        
+        <div class="timer-display" id="timer">25:00</div>
+        
+        <div class="controls">
+            <button id="startPauseBtn">开始</button>
+            <button id="resetBtn">重置</button>
+        </div>
+        
+        <div class="status" id="status">等待开始</div>
+        
+        <div class="config">
+            <label for="duration">倒计时时长（秒）:</label>
+            <input type="number" id="duration" min="1" value="1500" placeholder="输入秒数">
+            <button id="saveConfigBtn">保存设置</button>
+        </div>
+    </div>
+    
+    <button class="theme-toggle" id="themeToggle">🌙</button>
+
+    <script>
+        // DOM 元素
+        const timerDisplay = document.getElementById('timer');
+        const startPauseBtn = document.getElementById('startPauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const durationInput = document.getElementById('duration');
+        const saveConfigBtn = document.getElementById('saveConfigBtn');
+        const themeToggle = document.getElementById('themeToggle');
+        const statusDisplay = document.getElementById('status');
+
+        // 应用状态
+        let countdown;
+        let timeLeft;
+        let isRunning = false;
+        let isPaused = false;
+        let alarmPlaying = false;
+        let duration = 1500; // 默认25分钟
+        let audioContext;
+        let alarmInterval;
+        let pageVisible = true;
+
+        // 初始化
+        function init() {
+            // 从本地存储加载配置
+            const savedDuration = localStorage.getItem('countdownDuration');
+            if (savedDuration) {
+                duration = parseInt(savedDuration);
+                durationInput.value = duration;
+            }
+            
+            // 从本地存储加载主题
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                themeToggle.textContent = '☀️';
+            }
+            
+            // 初始化音频上下文
+            initAudio();
+            
+            resetTimer();
+            
+            // 监听页面可见性变化
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+
+            // 注册 Service Worker
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/countdown-pwa/service-worker.js')
+                        .then(registration => {
+                            console.log('Service Worker registered:', registration);
+                        })
+                        .catch(error => {
+                            console.error('Service Worker registration failed:', error);
+                        });
+                });
+            }
+        }
+
+        // 初始化音频
+        function initAudio() {
+            try {
+                // 尝试创建音频上下文
+                if (window.AudioContext || window.webkitAudioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            } catch (e) {
+                console.warn('音频初始化失败:', e);
+            }
+        }
+
+        // 处理页面可见性变化
+        function handleVisibilityChange() {
+            pageVisible = !document.hidden;
+            if (!pageVisible && isRunning && !isPaused) {
+                statusDisplay.textContent = '后台运行中...';
+            } else if (pageVisible && isRunning && !isPaused) {
+                statusDisplay.textContent = '计时进行中...';
+            }
+        }
+
+        // 用户交互以解锁音频
+        function unlockAudio() {
+            if (audioContext && audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+        }
+
+        // 格式化时间显示
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // 更新显示
+        function updateDisplay() {
+            timerDisplay.textContent = formatTime(timeLeft);
+        }
+
+        // 重置计时器
+        function resetTimer() {
+            clearInterval(countdown);
+            stopAlarm();
+            timeLeft = duration;
+            isRunning = false;
+            isPaused = false;
+            alarmPlaying = false;
+            updateDisplay();
+            startPauseBtn.textContent = '开始';
+            statusDisplay.textContent = '等待开始';
+        }
+
+        // 播放间断性报警声
+        function playIntermittentAlarm() {
+            // 首先尝试解锁音频上下文
+            unlockAudio();
+            
+            let beepCount = 0;
+            const maxBeeps = 20; // 10秒内播放20次（每次0.5秒）
+            
+            // 使用振动API（如果可用）
+            if (navigator.vibrate) {
+                navigator.vibrate([300, 200, 300, 200, 300, 200, 300, 200, 300]);
+            }
+            
+            alarmInterval = setInterval(() => {
+                if (beepCount >= maxBeeps || !alarmPlaying) {
+                    stopAlarm();
+                    resetTimer();
+                    return;
+                }
+                
+                // 播放蜂鸣声
+                playBeep();
+                
+                beepCount++;
+            }, 500); // 每0.5秒一次蜂鸣
+        }
+
+        // 播放单次蜂鸣
+        function playBeep() {
+            if (!audioContext) {
+                // 如果没有音频上下文，尝试使用系统提示
+                if (navigator.vibrate) {
+                    navigator.vibrate(300);
+                }
+                return;
+            }
+            
+            try {
+                // 确保音频上下文已解锁
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+                
+                // 创建蜂鸣声
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.type = 'sine';
+                oscillator.frequency.value = 880; // A5音符
+                gainNode.gain.value = 0.3;
+                
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 0.3); // 0.3秒的蜂鸣
+                
+            } catch (e) {
+                console.error('播放蜂鸣声失败:', e);
+                // 备用方案：振动
+                if (navigator.vibrate) {
+                    navigator.vibrate(300);
+                }
+            }
+        }
+
+        // 停止报警
+        function stopAlarm() {
+            alarmPlaying = false;
+            if (alarmInterval) {
+                clearInterval(alarmInterval);
+                alarmInterval = null;
+            }
+        }
+
+        // 开始倒计时
+        function startTimer() {
+            if (isRunning && !isPaused) return;
+            
+            // 解锁音频上下文
+            unlockAudio();
+            
+            isRunning = true;
+            isPaused = false;
+            startPauseBtn.textContent = '暂停';
+            statusDisplay.textContent = '计时进行中...';
+            
+            countdown = setInterval(() => {
+                timeLeft--;
+                updateDisplay();
+                
+                if (timeLeft <= 0) {
+                    clearInterval(countdown);
+                    alarm();
+                }
+            }, 1000);
+        }
+
+        // 暂停倒计时
+        function pauseTimer() {
+            clearInterval(countdown);
+            isPaused = true;
+            startPauseBtn.textContent = '继续';
+            statusDisplay.textContent = '已暂停';
+        }
+
+        // 报警功能
+        function alarm() {
+            statusDisplay.textContent = '时间到！';
+            alarmPlaying = true;
+            playIntermittentAlarm();
+        }
+
+        // 保存配置
+        function saveConfig() {
+            const inputValue = parseInt(durationInput.value);
+            if (isNaN(inputValue) || inputValue <= 0) {
+                alert('请输入有效的时长（秒）');
+                return;
+            }
+            
+            duration = inputValue;
+            localStorage.setItem('countdownDuration', duration);
+            resetTimer();
+            statusDisplay.textContent = `已保存设置：${formatTime(duration)}`;
+            
+            // 2秒后恢复状态显示
+            setTimeout(() => {
+                if (!isRunning) {
+                    statusDisplay.textContent = '等待开始';
+                }
+            }, 2000);
+        }
+
+        // 切换主题
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            
+            if (document.body.classList.contains('dark-mode')) {
+                themeToggle.textContent = '☀️';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                themeToggle.textContent = '🌙';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        // 事件监听
+        startPauseBtn.addEventListener('click', () => {
+            if (alarmPlaying) return;
+            
+            if (isRunning && !isPaused) {
+                pauseTimer();
+            } else {
+                startTimer();
+            }
+        });
+
+        resetBtn.addEventListener('click', () => {
+            if (alarmPlaying) {
+                stopAlarm();
+            }
+            resetTimer();
+        });
+
+        saveConfigBtn.addEventListener('click', saveConfig);
+
+        themeToggle.addEventListener('click', toggleTheme);
+
+        // 输入框回车事件
+        durationInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                saveConfig();
+            }
+        });
+
+        // 页面加载完成后初始化
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+
+        // 添加用户交互监听，用于解锁音频
+        document.addEventListener('touchstart', unlockAudio, { once: true });
+        document.addEventListener('click', unlockAudio, { once: true });
+    </script>
+</body>
+</html>
