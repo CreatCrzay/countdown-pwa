@@ -1,6 +1,6 @@
 const CACHE_NAME = 'countdown-pwa-cache-v1';
 const urlsToCache = [
-  '/countdown-pwa/html-artifact.html',
+  '/countdown-pwa/index.html',
   '/countdown-pwa/manifest.json',
   '/countdown-pwa/service-worker.js',
   '/countdown-pwa/icons/icon-192x192.png',

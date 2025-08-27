@@ -2,7 +2,7 @@
   "name": "黑白灰倒计时应用",
   "short_name": "倒计时",
   "description": "一个简洁的黑白灰风格倒计时应用，支持PWA离线使用。",
-  "start_url": "/countdown-pwa/html-artifact.html",
+  "start_url": "/countdown-pwa/index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#333333",
